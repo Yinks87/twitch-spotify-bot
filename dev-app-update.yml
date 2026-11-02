@@ -1,0 +1,4 @@
+provider: github
+owner: yinks87
+repo: twitch-spotify-bot
+updaterCacheDirName: twitch-spotify-bot-updater
