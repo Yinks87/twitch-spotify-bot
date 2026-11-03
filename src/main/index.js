@@ -8,6 +8,7 @@ import { initializeLogIpc } from './ipc/log-ipc';
 import { initializeRewardIpc } from './ipc/reward-ipc';
 import { initBot } from './services/bot';
 import { initAutoUpdater } from './services/updater';
+import { attachWindow, hideWindow, initLifecycle, showWindow, startedHidden } from './lifecycle';
 import { loadWindowState, trackWindowState } from './window-state';
 import { flushLogs, logger } from './services/logger';
 import { errorMessage } from './services/template';
@@ -24,15 +25,23 @@ function createWindow() {
     icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      devTools: is.dev
     }
   });
 
+  const hidden = startedHidden();
   trackWindowState(mainWindow);
-  if (maximized) mainWindow.maximize();
+  attachWindow(mainWindow);
+  if (maximized) {
+    // maximize() würde ein verstecktes Fenster sofort einblenden.
+    if (hidden) mainWindow.once('show', () => mainWindow.maximize());
+    else mainWindow.maximize();
+  }
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show();
+    if (hidden) hideWindow();
+    else mainWindow.show();
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -51,13 +60,7 @@ function createWindow() {
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on('second-instance', () => {
-    const [window] = BrowserWindow.getAllWindows();
-    if (window) {
-      if (window.isMinimized()) window.restore();
-      window.focus();
-    }
-  });
+  app.on('second-instance', showWindow);
 
   app.whenReady().then(() => {
     electronApp.setAppUserModelId('com.yinks87.twitch-spotify-bot');
@@ -70,13 +73,14 @@ if (!app.requestSingleInstanceLock()) {
     initializeOAuthIpc();
     initializeLogIpc();
     initializeRewardIpc();
+    initLifecycle();
 
     createWindow();
     initAutoUpdater();
     initBot().catch((error) => logger.error('app', `Start fehlgeschlagen: ${errorMessage(error)}`));
 
     app.on('activate', function () {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+      if (!showWindow()) createWindow();
     });
   });
 

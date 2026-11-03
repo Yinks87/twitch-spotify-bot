@@ -4,7 +4,7 @@ import ChatSettings from './ChatSettings';
 import ConnectionSetup from './ConnectionSetup';
 import SkipSettings from './SkipSettings';
 import { SongRequestSettings, SpotifyTargetSettings } from './SongRequestSettings';
-import { Card, SaveBar, Toggle } from './ui';
+import { Card, Field, RadioGroup, SaveBar, Toggle } from './ui';
 
 const TABS = [
   ['twitch', 'Twitch'],
@@ -26,7 +26,30 @@ function GeneralSettings() {
         onChange={(showActionLog) => update({ showActionLog })}
         label="Action-Log in der Navigation und im Dashboard anzeigen (die Aktionen werden immer protokolliert)"
       />
-      <SaveBar onSave={() => save(['showActionLog'])} saving={saving} error={error} />
+      <Toggle
+        checked={draft.autoStart}
+        onChange={(autoStart) => update({ autoStart })}
+        label="App beim Anmelden an Windows automatisch starten (minimiert im Tray)"
+      />
+      <Field label="Beim Schließen des Fensters">
+        <RadioGroup
+          value={draft.closeAction}
+          onChange={(closeAction) => update({ closeAction })}
+          options={[
+            { value: 'quit', label: 'App beenden' },
+            {
+              value: 'tray',
+              label: 'In den Tray minimieren',
+              description: 'Der Bot läuft im Hintergrund weiter. Beenden über das Tray-Symbol.'
+            }
+          ]}
+        />
+      </Field>
+      <SaveBar
+        onSave={() => save(['showActionLog', 'autoStart', 'closeAction'])}
+        saving={saving}
+        error={error}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { SECTIONS, getSettings } from '../store';
 import { getCredentials, setCredentials, updateSettings } from '../services/bot';
+import { applyAppSettings } from '../lifecycle';
 import { handle } from './handle';
 
 const PROVIDERS = ['twitch', 'spotify'];
@@ -20,7 +21,9 @@ export function initializeStoreIpc() {
   });
   handle('settings:set', (section, value) => {
     assertSection(section);
-    return updateSettings(section, value);
+    const saved = updateSettings(section, value);
+    if (section === 'app') applyAppSettings();
+    return saved;
   });
   handle('credentials:get', (provider) => {
     assertProvider(provider);

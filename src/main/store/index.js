@@ -32,7 +32,9 @@ const REWARD_OPTIONS = {
 export const DEFAULTS = {
   app: {
     setupCompleted: false,
-    showActionLog: true
+    showActionLog: true,
+    autoStart: true,
+    closeAction: 'tray' // quit | tray
   },
   songRequest: {
     mode: 'channelpoints', // channelpoints | powerup
@@ -129,7 +131,9 @@ const rewardOptions = (reward) => ({
 const NORMALIZERS = {
   app: (v) => ({
     setupCompleted: bool(v.setupCompleted, false),
-    showActionLog: bool(v.showActionLog, true)
+    showActionLog: bool(v.showActionLog, true),
+    autoStart: bool(v.autoStart, false),
+    closeAction: oneOf(v.closeAction, ['quit', 'tray'], DEFAULTS.app.closeAction)
   }),
   songRequest: (v) => ({
     mode: oneOf(v.mode, ['channelpoints', 'powerup'], DEFAULTS.songRequest.mode),
