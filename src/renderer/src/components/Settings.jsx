@@ -16,9 +16,14 @@ const TABS = [
   ['general', 'Allgemein']
 ];
 
-function GeneralSettings() {
-  const { draft, loading, saving, error, update, save } = useSettings('app');
+const GENERAL_FIELDS = ['showActionLog', 'autoStart', 'closeAction'];
+
+function GeneralSettings({ onNotify }) {
+  const { draft, loading, saving, error, update, save, isDirty } = useSettings('app');
   if (loading) return null;
+  const onSave = async () => {
+    if (await save(GENERAL_FIELDS)) onNotify?.({ ok: true, message: 'Einstellungen gespeichert' });
+  };
   return (
     <div className="stack">
       <Toggle
@@ -46,7 +51,8 @@ function GeneralSettings() {
         />
       </Field>
       <SaveBar
-        onSave={() => save(['showActionLog', 'autoStart', 'closeAction'])}
+        onSave={onSave}
+        disabled={!isDirty(GENERAL_FIELDS)}
         saving={saving}
         error={error}
       />
@@ -54,7 +60,7 @@ function GeneralSettings() {
   );
 }
 
-export default function Settings({ status }) {
+export default function Settings({ status, onNotify }) {
   const [tab, setTab] = useState('twitch');
 
   return (
@@ -76,15 +82,15 @@ export default function Settings({ status }) {
       </div>
 
       {tab === 'chat' ? (
-        <ChatSettings />
+        <ChatSettings onNotify={onNotify} />
       ) : (
         <Card>
           {tab === 'twitch' && <ConnectionSetup provider="twitch" status={status.twitch} />}
-          {tab === 'songRequest' && <SongRequestSettings />}
+          {tab === 'songRequest' && <SongRequestSettings onNotify={onNotify} />}
           {tab === 'spotify' && <ConnectionSetup provider="spotify" status={status.spotify} />}
-          {tab === 'target' && <SpotifyTargetSettings />}
-          {tab === 'skip' && <SkipSettings />}
-          {tab === 'general' && <GeneralSettings />}
+          {tab === 'target' && <SpotifyTargetSettings onNotify={onNotify} />}
+          {tab === 'skip' && <SkipSettings onNotify={onNotify} />}
+          {tab === 'general' && <GeneralSettings onNotify={onNotify} />}
         </Card>
       )}
     </>

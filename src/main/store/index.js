@@ -26,7 +26,8 @@ const REWARD_OPTIONS = {
   maxPerStreamEnabled: false,
   maxPerStream: 10,
   maxPerUserEnabled: false,
-  maxPerUser: 1
+  maxPerUser: 1,
+  isPaused: true
 };
 
 export const DEFAULTS = {
@@ -43,10 +44,13 @@ export const DEFAULTS = {
       title: 'Song Request',
       cost: 500,
       prompt: 'Songtitel, Interpret oder Spotify-Link eingeben',
+      isGlobalCooldownEnabled: true,
+      globalcooldownSeconds: 60,
       ...REWARD_OPTIONS
     },
     target: 'queue', // queue | playlist
-    playlist: '' // leer = aktuell laufende Playlist
+    playlist: '', // leer = aktuell laufende Playlist
+    playlistName: '' // beim Speichern von Spotify ermittelt, nur zur Anzeige
   },
   skip: {
     enabled: true,
@@ -57,6 +61,7 @@ export const DEFAULTS = {
       cost: 300,
       ...REWARD_OPTIONS
     },
+    //TODO: Add array of commands
     command: '!skip',
     votesRequired: 3,
     windowSeconds: 120
@@ -65,6 +70,7 @@ export const DEFAULTS = {
     messagesEnabled: true,
     nowPlaying: {
       enabled: true,
+      //TODO: Add array of commands
       command: '!song',
       cooldownSeconds: 30
     },
@@ -125,7 +131,9 @@ const rewardOptions = (reward) => ({
   maxPerStreamEnabled: bool(reward.maxPerStreamEnabled, false),
   maxPerStream: int(reward.maxPerStream, REWARD_OPTIONS.maxPerStream, 1, 1000000),
   maxPerUserEnabled: bool(reward.maxPerUserEnabled, false),
-  maxPerUser: int(reward.maxPerUser, REWARD_OPTIONS.maxPerUser, 1, 1000000)
+  maxPerUser: int(reward.maxPerUser, REWARD_OPTIONS.maxPerUser, 1, 1000000),
+  isPaused: bool(reward.isPaused, true),
+
 });
 
 const NORMALIZERS = {
@@ -142,10 +150,13 @@ const NORMALIZERS = {
       title: str(v.reward.title, DEFAULTS.songRequest.reward.title, 45) || 'Song Request',
       cost: int(v.reward.cost, DEFAULTS.songRequest.reward.cost, 1, 1000000000),
       prompt: str(v.reward.prompt, '', 200),
+      isGlobalCooldownEnabled: bool(v.reward.isGlobalCooldownEnabled, true),
+      globalcooldownSeconds: int(v.reward.globalcooldownSeconds, 60, 0, 86400),
       ...rewardOptions(v.reward)
     },
     target: oneOf(v.target, ['queue', 'playlist'], 'queue'),
-    playlist: str(v.playlist, '', 200)
+    playlist: str(v.playlist, '', 200),
+    playlistName: str(v.playlistName, '', 200)
   }),
   skip: (v) => ({
     enabled: bool(v.enabled, true),

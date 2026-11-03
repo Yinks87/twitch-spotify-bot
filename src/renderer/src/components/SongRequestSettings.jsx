@@ -1,14 +1,22 @@
 import { useSettings, useWizardControl } from '../hooks';
 import RewardFields from './RewardFields';
-import { Field, Notice, RadioGroup, SaveBar, TextInput } from './ui';
+import { Field, Notice, RadioGroup, SaveBar, SecretInput, TextInput } from './ui';
 
-export function SongRequestSettings({ control, onSaved, saveLabel }) {
-  const { draft, loading, saving, error, update, updateNested, save } = useSettings('songRequest');
+const REQUEST_FIELDS = ['mode', 'powerUpName', 'reward'];
+const TARGET_FIELDS = ['target', 'playlist'];
+const SAVED_MESSAGE = { ok: true, message: 'Einstellungen gespeichert' };
+
+export function SongRequestSettings({ control, onSaved, saveLabel, onNotify }) {
+  const { draft, loading, saving, error, update, updateNested, save, isDirty } =
+    useSettings('songRequest');
   const invalid = !loading && draft.mode === 'powerup' && !draft.powerUpName.trim();
   const onSave = async () => {
-    if (await save(['mode', 'powerUpName', 'reward'])) onSaved?.();
+    if (await save(REQUEST_FIELDS)) {
+      onNotify?.(SAVED_MESSAGE);
+      onSaved?.();
+    }
   };
-  useWizardControl(control, () => save(['mode', 'powerUpName', 'reward']), invalid);
+  useWizardControl(control, () => save(REQUEST_FIELDS), invalid);
   if (loading) return null;
 
   return (
@@ -60,20 +68,23 @@ export function SongRequestSettings({ control, onSaved, saveLabel }) {
         saving={saving}
         error={error}
         label={saveLabel}
-        disabled={invalid}
+        disabled={invalid || !isDirty(REQUEST_FIELDS)}
         hideButton={Boolean(control)}
       />
     </div>
   );
 }
 
-export function SpotifyTargetSettings({ control, onSaved, saveLabel }) {
-  const { draft, loading, saving, error, update, save } = useSettings('songRequest');
-  useWizardControl(control, () => save(['target', 'playlist']), false);
+export function SpotifyTargetSettings({ control, onSaved, saveLabel, onNotify }) {
+  const { draft, loading, saving, error, update, save, isDirty } = useSettings('songRequest');
+  useWizardControl(control, () => save(TARGET_FIELDS), false);
   if (loading) return null;
 
   const onSave = async () => {
-    if (await save(['target', 'playlist'])) onSaved?.();
+    if (await save(TARGET_FIELDS)) {
+      onNotify?.(SAVED_MESSAGE);
+      onSaved?.();
+    }
   };
 
   return (
@@ -97,9 +108,9 @@ export function SpotifyTargetSettings({ control, onSaved, saveLabel }) {
       {draft.target === 'playlist' && (
         <Field
           label="Playlist (Link, URI oder ID)"
-          hint="Leer lassen, um die aktuell laufende Playlist zu verwenden."
+          hint="Nach Playlist-Namen kann nicht gesucht werden, es muss der link oder die ID sein"
         >
-          <TextInput
+          <SecretInput
             value={draft.playlist}
             onChange={(playlist) => update({ playlist })}
             placeholder="https://open.spotify.com/playlist/…"
@@ -111,6 +122,7 @@ export function SpotifyTargetSettings({ control, onSaved, saveLabel }) {
         saving={saving}
         error={error}
         label={saveLabel}
+        disabled={!isDirty(TARGET_FIELDS)}
         hideButton={Boolean(control)}
       />
     </div>

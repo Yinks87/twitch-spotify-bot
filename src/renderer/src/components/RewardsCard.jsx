@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Badge, Button, Card } from './ui';
+import { Badge, Button, Card, Switch } from './ui';
 
 export default function RewardsCard({ connected, onNotify }) {
   const [rewards, setRewards] = useState([]);
@@ -30,6 +30,7 @@ export default function RewardsCard({ connected, onNotify }) {
     }
   };
 
+  // TODO: Add a custom dialog
   const remove = (reward) => {
     if (!window.confirm(`Reward „${reward.label}“ wirklich bei Twitch löschen?`)) return;
     run(() => window.rewardApi.remove(reward.key), 'Reward gelöscht');
@@ -67,6 +68,11 @@ export default function RewardsCard({ connected, onNotify }) {
               </div>
             </div>
             <div className="row">
+              <Switch
+                checked={!reward.isPaused}
+                disabled={busy || !connected}
+                onChange={() => run(() => window.rewardApi.toggle(reward.key), 'Reward aktualisiert')}
+              />
               <Badge tone={reward.exists ? 'ok' : 'idle'}>
                 {reward.exists ? 'Angelegt' : 'Nicht angelegt'}
               </Badge>

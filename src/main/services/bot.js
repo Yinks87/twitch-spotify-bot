@@ -11,7 +11,7 @@ import { setRedemptionStatus } from './twitch/api';
 import { EVENT_CHAT, EVENT_POWERUP, EVENT_REDEMPTION } from './twitch/events';
 import { isEventSubRunning, startEventSub, stopEventSub } from './twitch/eventsub';
 import { handleChatMessage } from './features/chat-commands';
-import { deleteRewardByKey, getRewardId, listRewards, syncRewards } from './features/rewards';
+import { deleteRewardByKey, getRewardId, listRewards, syncRewards, toggleRewardByKey } from './features/rewards';
 import { handleSongRequest } from './features/song-request';
 import { getSkipState, registerSkipVote, resetVotes } from './features/skip-vote';
 
@@ -29,7 +29,7 @@ async function settleRedemption(event, ok) {
     await setRedemptionStatus(event.id, event.reward.id, status);
     logger.info(
       'twitch',
-      `Einlösung von ${event.user_login} ${ok ? 'abgeschlossen' : 'abgebrochen (Punkte erstattet)'}`
+      `Einlösung von ${event.user_name} ${ok ? 'abgeschlossen' : 'abgebrochen (Punkte erstattet)'}`
     );
   } catch (error) {
     logger.error(
@@ -45,9 +45,10 @@ async function onRedemption(event) {
   const skip = getSettings('skip');
 
   if (songRequest.mode === 'channelpoints' && event.reward.id === getRewardId('songRequest')) {
-    logger.info('twitch', `Channelpoint-Einlösung "${event.reward.title}" von ${event.user_login}`);
+    logger.info('twitch', `Channelpoint-Einlösung "${event.reward.title}" von ${event.user_name}`);
+    console.log(event);
     const ok = await handleSongRequest({
-      userLogin: event.user_login,
+      userLogin: event.user_name,
       input: event.user_input,
       source: 'Channelpoints'
     });
@@ -57,10 +58,10 @@ async function onRedemption(event) {
     skip.mode === 'channelpoints' &&
     event.reward.id === getRewardId('skip')
   ) {
-    logger.info('twitch', `Channelpoint-Einlösung "${event.reward.title}" von ${event.user_login}`);
+    logger.info('twitch', `Channelpoint-Einlösung "${event.reward.title}" von ${event.user_name}`);
     const result = await registerSkipVote({
       userId: event.user_id,
-      userLogin: event.user_login,
+      userLogin: event.user_name,
       source: 'Channelpoints'
     });
     await settleRedemption(event, result === 'counted' || result === 'skipped');
@@ -76,21 +77,21 @@ async function onPowerUp(event) {
   if (songRequest.mode === 'powerup' && matchesPowerUp(event, songRequest.powerUpName)) {
     logger.info(
       'twitch',
-      `Power-Up "${title}" von ${event.user_login} (${event.custom_power_up.bits} Bits)`
+      `Power-Up "${title}" von ${event.user_name} (${event.custom_power_up.bits} Bits)`
     );
     await handleSongRequest({
-      userLogin: event.user_login,
+      userLogin: event.user_name,
       input: event.user_input,
       source: 'Power-Up'
     });
   } else if (skip.enabled && skip.mode === 'powerup' && matchesPowerUp(event, skip.powerUpName)) {
     logger.info(
       'twitch',
-      `Power-Up "${title}" von ${event.user_login} (${event.custom_power_up.bits} Bits)`
+      `Power-Up "${title}" von ${event.user_name} (${event.custom_power_up.bits} Bits)`
     );
     await registerSkipVote({
       userId: event.user_id,
-      userLogin: event.user_login,
+      userLogin: event.user_name,
       source: 'Power-Up'
     });
   }
@@ -267,6 +268,12 @@ export async function removeReward(key) {
 }
 
 export const getRewards = listRewards;
+
+export async function toggleReward(key) {
+  if (!twitchAuth.hasSession()) throw new Error('Twitch ist nicht verbunden');
+  await twitchAuth.ensureValidToken();
+  await toggleRewardByKey(key);
+}
 
 export function getAppState() {
   return { status: getStatus(), skip: getSkipState() };

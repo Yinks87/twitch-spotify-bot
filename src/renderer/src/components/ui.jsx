@@ -131,3 +131,17 @@ export function SaveBar({ onSave, saving, error, label = 'Speichern', disabled, 
     </div>
   );
 }
+
+export function Switch({ checked, onChange, disabled }) {
+  return (
+    <label className="switch">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        disabled={disabled}
+      />
+      <span className="slider" />
+    </label>
+  );
+}

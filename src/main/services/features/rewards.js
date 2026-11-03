@@ -62,6 +62,21 @@ async function removeFromTwitch(key) {
   return true;
 }
 
+async function toggleReward(key) {
+  const store = getStore('rewards');
+  const id = store.get(key);
+  if (!id) return false;
+  try {
+    const existing = (await getManageableRewards()).find((r) => r.id === id);
+    if (!existing) throw new Error('Reward nicht gefunden');
+    await updateReward(id, { id, is_paused: !existing.is_paused });
+  } catch (error) {
+    if (error.status !== 404) throw error;
+    store.delete(key);
+  }
+  return true;
+}
+
 async function syncOne(key, wanted, recreate) {
   const store = getStore('rewards');
 
@@ -136,9 +151,29 @@ export function deleteRewardByKey(key) {
   return queue;
 }
 
-export function listRewards() {
+export async function toggleRewardByKey(key) {
+  if (!KEYS.includes(key)) throw new Error(`Unbekannter Reward: ${key}`);
+  const run = async () => {
+    await toggleReward(key);
+    broadcast('rewards:update');
+  };
+  queue = queue.then(run, run);
+  return queue;
+}
+
+async function fetchPausedStates() {
+  try {
+    const rewards = await getManageableRewards();
+    return new Map(rewards.map((r) => [r.id, Boolean(r.is_paused)]));
+  } catch {
+    return new Map();
+  }
+}
+
+export async function listRewards() {
   const wanted = desiredRewards();
   const store = getStore('rewards');
+  const paused = await fetchPausedStates();
   return KEYS.map((key) => ({
     key,
     label: LABELS[key],
@@ -146,7 +181,8 @@ export function listRewards() {
     title: wanted[key]?.title ?? null,
     cost: wanted[key]?.cost ?? null,
     exists: Boolean(store.get(key)),
-    suspended: isSuspended(key)
+    suspended: isSuspended(key),
+    isPaused: paused.get(store.get(key)) ?? false
   })).filter((reward) => reward.wanted || reward.exists);
 }
 

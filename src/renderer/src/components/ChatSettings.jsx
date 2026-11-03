@@ -18,9 +18,14 @@ const MESSAGE_LABELS = {
   skipError: 'Fehler beim Überspringen'
 };
 
-export default function ChatSettings() {
-  const { draft, loading, saving, error, update, updateNested, save } = useSettings('chat');
+export default function ChatSettings({ onNotify }) {
+  const { draft, loading, saving, error, update, updateNested, save, isDirty } =
+    useSettings('chat');
   if (loading) return null;
+
+  const onSave = async () => {
+    if (await save()) onNotify?.({ ok: true, message: 'Einstellungen gespeichert' });
+  };
 
   return (
     <div className="stack">
@@ -90,7 +95,7 @@ export default function ChatSettings() {
         </div>
       </Card>
 
-      <SaveBar onSave={() => save()} saving={saving} error={error} />
+      <SaveBar onSave={onSave} disabled={!isDirty()} saving={saving} error={error} />
     </div>
   );
 }

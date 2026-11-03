@@ -1,5 +1,6 @@
 import { SECTIONS, getSettings } from '../store';
 import { getCredentials, setCredentials, updateSettings } from '../services/bot';
+import { getPlaylistName } from '../services/spotify';
 import { applyAppSettings } from '../lifecycle';
 import { handle } from './handle';
 
@@ -19,8 +20,14 @@ export function initializeStoreIpc() {
     assertSection(section);
     return getSettings(section);
   });
-  handle('settings:set', (section, value) => {
+  handle('settings:set', async (section, value) => {
     assertSection(section);
+    if (section === 'songRequest' && typeof value.playlist === 'string') {
+      const current = getSettings(section);
+      if (value.playlist !== current.playlist || !current.playlistName) {
+        value = { ...value, playlistName: await getPlaylistName(value.playlist) };
+      }
+    }
     const saved = updateSettings(section, value);
     if (section === 'app') applyAppSettings();
     return saved;

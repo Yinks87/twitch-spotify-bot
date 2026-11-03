@@ -69,6 +69,8 @@ export async function createReward(reward) {
 }
 
 export async function updateReward(id, reward) {
+
+  console.log(`Updating reward: ${id}`);
   const result = await helix('PATCH', '/channel_points/custom_rewards', {
     query: { broadcaster_id: getIdentity().id, id },
     body: reward

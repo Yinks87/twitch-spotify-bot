@@ -16,6 +16,8 @@ const STEPS = [
   'Fertig'
 ];
 
+
+
 export default function Wizard({ status, onNotify, onFinished }) {
   const [step, setStep] = useState(0);
   const [finishing, setFinishing] = useState(false);

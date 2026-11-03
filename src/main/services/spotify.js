@@ -266,16 +266,32 @@ export async function addToQueue(track) {
   await request('POST', '/me/player/queue', { query: { uri: track.uri } });
 }
 
+function parsePlaylistId(value) {
+  const id =
+    value.match(/spotify:playlist:([A-Za-z0-9]{22})/i)?.[1] ??
+    value.match(/open\.spotify\.com\/(?:intl-[a-z-]+\/)?playlist\/([A-Za-z0-9]{22})/i)?.[1] ??
+    (PLAYLIST_ID.test(value) ? value : null);
+  if (!id) throw new SpotifyError('Ungültige Playlist-Angabe', 400);
+  return id;
+}
+
+// Gibt '' zurück, wenn der Name nicht abrufbar ist (z. B. Spotify nicht verbunden).
+export async function getPlaylistName(setting) {
+  const value = setting.trim();
+  if (!value) return '';
+  const id = parsePlaylistId(value);
+  try {
+    const playlist = await request('GET', `/playlists/${id}`, { query: { fields: 'name' } });
+    return playlist?.name ?? '';
+  } catch (error) {
+    logger.warn('spotify', `Playlist-Name nicht abrufbar: ${errorMessage(error)}`);
+    return '';
+  }
+}
+
 export async function resolvePlaylistId(setting) {
   const value = setting.trim();
-  if (value) {
-    const id =
-      value.match(/spotify:playlist:([A-Za-z0-9]{22})/i)?.[1] ??
-      value.match(/open\.spotify\.com\/(?:intl-[a-z-]+\/)?playlist\/([A-Za-z0-9]{22})/i)?.[1] ??
-      (PLAYLIST_ID.test(value) ? value : null);
-    if (!id) throw new SpotifyError('Ungültige Playlist-Angabe', 400);
-    return id;
-  }
+  if (value) return parsePlaylistId(value);
   const playback = await request('GET', '/me/player');
   if (playback?.context?.type !== 'playlist') {
     throw new SpotifyError('Es läuft aktuell keine Playlist', 400);

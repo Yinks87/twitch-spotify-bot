@@ -164,7 +164,7 @@ export default function Dashboard({ status, skip, showLog, onNavigate, onNotify 
               <dd>
                 {songRequest.target === 'queue'
                   ? 'Warteschlange'
-                  : `Playlist (${songRequest.playlist || 'aktuell laufende'})`}
+                  : `Playlist (${songRequest.playlistName || songRequest.playlist || 'aktuell laufende'})`}
               </dd>
             </dl>
           )}

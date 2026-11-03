@@ -13,7 +13,7 @@ function App() {
 
   const notify = useCallback((message) => {
     setToast(message);
-    setTimeout(() => setToast((current) => (current === message ? null : current)), 5000);
+    setTimeout(() => setToast((current) => (current === message ? null : current)), 3000);
   }, []);
 
   useEffect(() => {
@@ -107,7 +107,7 @@ function App() {
             onNotify={notify}
           />
         )}
-        {current === 'settings' && <Settings status={status} />}
+        {current === 'settings' && <Settings status={status} onNotify={notify} />}
         {current === 'log' && <ActionLog />}
       </main>
       {toastView}

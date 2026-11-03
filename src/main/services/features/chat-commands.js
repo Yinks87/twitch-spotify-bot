@@ -12,21 +12,21 @@ async function handleNowPlaying(event, nowPlaying) {
   if (remaining > 0) {
     logger.info(
       'chat',
-      `Command ${nowPlaying.command} von ${event.chatter_user_login} im Cooldown (${Math.ceil(remaining / 1000)}s)`
+      `Command ${nowPlaying.command} von ${event.chatter_user_name} im Cooldown (${Math.ceil(remaining / 1000)}s)`
     );
     return;
   }
   lastNowPlayingAt = Date.now();
-  logger.info('chat', `Command ${nowPlaying.command} von ${event.chatter_user_login}`);
+  logger.info('chat', `Command ${nowPlaying.command} von ${event.chatter_user_name}`);
 
   try {
     const track = await spotify.getCurrentlyPlaying();
     if (!track) {
-      await say('noSong', { user: event.chatter_user_login });
+      await say('noSong', { user: event.chatter_user_name });
       return;
     }
     await say('nowPlaying', {
-      user: event.chatter_user_login,
+      user: event.chatter_user_name,
       song: track.song,
       title: track.title,
       artist: track.artist,
@@ -50,7 +50,7 @@ export async function handleChatMessage(event) {
   } else if (skip.enabled && skip.mode === 'command' && command === skip.command.toLowerCase()) {
     await registerSkipVote({
       userId: event.chatter_user_id,
-      userLogin: event.chatter_user_login,
+      userLogin: event.chatter_user_name,
       source: 'Chat-Command'
     });
   }

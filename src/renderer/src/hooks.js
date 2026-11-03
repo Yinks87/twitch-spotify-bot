@@ -37,6 +37,16 @@ export function useSettings(section) {
     []
   );
 
+  // fields: optional Liste der Schlüssel, die verglichen werden.
+  const isDirty = useCallback(
+    (fields) => {
+      if (!draft || !saved) return false;
+      const keys = fields ?? Object.keys(draft);
+      return keys.some((k) => JSON.stringify(draft[k]) !== JSON.stringify(saved[k]));
+    },
+    [draft, saved]
+  );
+
   // fields: optional Liste der Schlüssel, die gespeichert werden sollen.
   const save = useCallback(
     async (fields) => {
@@ -58,7 +68,7 @@ export function useSettings(section) {
     [draft, section]
   );
 
-  return { draft, saved, loading: draft === null, saving, error, update, updateNested, save };
+  return { draft, saved, loading: draft === null, saving, error, update, updateNested, save, isDirty };
 }
 
 export function formatDate(timestamp) {

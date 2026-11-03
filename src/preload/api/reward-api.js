@@ -4,5 +4,6 @@ export const rewardApi = {
   list: () => call('rewards:list'),
   sync: () => call('rewards:sync'),
   remove: (key) => call('rewards:delete', key),
-  onUpdate: (callback) => subscribe('rewards:update', callback)
+  onUpdate: (callback) => subscribe('rewards:update', callback),
+  toggle: (key) => call('rewards:toggle', key)
 };

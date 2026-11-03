@@ -2,8 +2,9 @@ import { useSettings, useWizardControl } from '../hooks';
 import RewardFields from './RewardFields';
 import { Field, NumberInput, Notice, RadioGroup, SaveBar, TextInput, Toggle } from './ui';
 
-export default function SkipSettings({ control, saveLabel, onSaved }) {
-  const { draft, loading, saving, error, update, updateNested, save } = useSettings('skip');
+export default function SkipSettings({ control, saveLabel, onSaved, onNotify }) {
+  const { draft, loading, saving, error, update, updateNested, save, isDirty } =
+    useSettings('skip');
 
   const invalid =
     !loading &&
@@ -14,7 +15,10 @@ export default function SkipSettings({ control, saveLabel, onSaved }) {
       !(Number(draft.windowSeconds) >= 10));
 
   const onSave = async () => {
-    if (await save()) onSaved?.();
+    if (await save()) {
+      onNotify?.({ ok: true, message: 'Einstellungen gespeichert' });
+      onSaved?.();
+    }
   };
   useWizardControl(control, () => save(), invalid);
   if (loading) return null;
@@ -104,7 +108,7 @@ export default function SkipSettings({ control, saveLabel, onSaved }) {
         saving={saving}
         error={error}
         label={saveLabel}
-        disabled={invalid}
+        disabled={invalid || !isDirty()}
         hideButton={Boolean(control)}
       />
     </div>

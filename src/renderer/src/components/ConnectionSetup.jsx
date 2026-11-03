@@ -136,11 +136,9 @@ export default function ConnectionSetup({ provider, status }) {
       </Field>
 
       <Field label="Client-ID">
-        <TextInput
+        <SecretInput
           value={draft.clientId}
           onChange={(clientId) => setDraft({ ...draft, clientId })}
-          autoComplete="off"
-          spellCheck={false}
         />
       </Field>
 
