@@ -91,7 +91,7 @@ async function syncOne(key, wanted, recreate) {
     logger.success('twitch', `Channelpoint-Reward "${wanted.title}" angelegt`);
   } catch (error) {
     if (error.status !== 400 || !/duplicate/i.test(`${error.code} ${error.message}`)) throw error;
-    // Ein Reward mit diesem Titel existiert bereits (von dieser App angelegt) – übernehmen.
+    // Ein Reward mit diesem Titel existiert bereits (von dieser App angelegt) - übernehmen.
     const match = (await getManageableRewards()).find((r) => r.title === wanted.title);
     if (!match) throw error;
     await updateReward(match.id, wanted);

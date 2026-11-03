@@ -1,6 +1,5 @@
 import Store from 'electron-store';
 
-// Jede Gruppe liegt in einer eigenen Datei im userData-Ordner.
 const FILE_NAMES = {
   app: 'app',
   twitchAuth: 'twitch-auth',

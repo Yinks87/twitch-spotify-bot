@@ -92,7 +92,7 @@ export default function Dashboard({ status, skip, showLog, onNavigate, onNotify 
         >
           <dl className="kv">
             <dt>Konto</dt>
-            <dd>{twitch.user?.displayName ?? '–'}</dd>
+            <dd>{twitch.user?.displayName ?? '-'}</dd>
             <dt>Events</dt>
             <dd>
               <Badge tone={eventSubTone}>{eventSubLabel}</Badge>
@@ -124,7 +124,7 @@ export default function Dashboard({ status, skip, showLog, onNavigate, onNotify 
         >
           <dl className="kv">
             <dt>Konto</dt>
-            <dd>{spotify.user?.displayName ?? '–'}</dd>
+            <dd>{spotify.user?.displayName ?? '-'}</dd>
             <dt>Autorisiert am</dt>
             <dd>{formatDate(spotify.authorizedAt)}</dd>
             <dt>Nächste Autorisierung</dt>
@@ -137,7 +137,7 @@ export default function Dashboard({ status, skip, showLog, onNavigate, onNotify 
                   </Badge>
                 </>
               ) : (
-                '–'
+                '-'
               )}
             </dd>
           </dl>

@@ -44,12 +44,12 @@ export async function parseSongInput(raw) {
   if (ANY_URL.test(text)) {
     return {
       type: 'unsupported',
-      reason: 'Es werden nur Spotify-Links unterstützt. Alternativ "Titel Interpret" eingeben.'
+      reason: 'Es werden nur Spotify-Links unterstützt. Alternativ "Titel" und "Interpret" eingeben.'
     };
   }
 
   const query = text
-    .replace(/\s+[-–—]\s+/g, ' ')
+    .replace(/\s+[--—]\s+/g, ' ')
     .replace(/["„“”]/g, '')
     .replace(/\s+/g, ' ')
     .trim()

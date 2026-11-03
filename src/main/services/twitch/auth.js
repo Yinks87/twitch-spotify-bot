@@ -106,7 +106,7 @@ function applyValidation(data) {
 
 export async function completeAuth(code, state) {
   if (!pendingState || state !== pendingState) {
-    throw new TwitchAuthError('Ungültiger State – bitte den Vorgang erneut starten');
+    throw new TwitchAuthError('Ungültiger State - bitte den Vorgang erneut starten');
   }
   pendingState = null;
   const tokens = await tokenRequest({
@@ -162,7 +162,7 @@ async function refresh() {
         `Token-Refresh abgelehnt, neue Autorisierung nötig: ${errorMessage(error)}`
       );
       invalidateSession('Neue Autorisierung erforderlich');
-      throw new TwitchAuthError('Twitch-Sitzung abgelaufen – bitte neu verbinden');
+      throw new TwitchAuthError('Twitch-Sitzung abgelaufen - bitte neu verbinden');
     }
     throw error;
   }

@@ -1,12 +1,12 @@
-import { useSettings } from '../hooks';
+import { useSettings, useWizardControl } from '../hooks';
 import RewardFields from './RewardFields';
 import { Field, NumberInput, Notice, RadioGroup, SaveBar, TextInput, Toggle } from './ui';
 
-export default function SkipSettings({ saveLabel, onSaved }) {
+export default function SkipSettings({ control, saveLabel, onSaved }) {
   const { draft, loading, saving, error, update, updateNested, save } = useSettings('skip');
-  if (loading) return null;
 
   const invalid =
+    !loading &&
     draft.enabled &&
     ((draft.mode === 'powerup' && !draft.powerUpName.trim()) ||
       (draft.mode === 'command' && !draft.command.trim()) ||
@@ -16,6 +16,8 @@ export default function SkipSettings({ saveLabel, onSaved }) {
   const onSave = async () => {
     if (await save()) onSaved?.();
   };
+  useWizardControl(control, () => save(), invalid);
+  if (loading) return null;
 
   return (
     <div className="stack">
@@ -97,7 +99,14 @@ export default function SkipSettings({ saveLabel, onSaved }) {
         </>
       )}
 
-      <SaveBar onSave={onSave} saving={saving} error={error} label={saveLabel} disabled={invalid} />
+      <SaveBar
+        onSave={onSave}
+        saving={saving}
+        error={error}
+        label={saveLabel}
+        disabled={invalid}
+        hideButton={Boolean(control)}
+      />
     </div>
   );
 }

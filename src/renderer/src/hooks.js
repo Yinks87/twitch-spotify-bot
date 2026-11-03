@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 
 // Lädt einen Einstellungsbereich und stellt einen Entwurf bereit, der explizit gespeichert wird.
+// Im Wizard speichert der "Weiter"-Button: Die Komponente stellt save/invalid über control bereit.
+export function useWizardControl(control, save, invalid) {
+  if (control) control.ref.current = { save, invalid };
+  const onInvalidChange = control?.onInvalidChange;
+  useEffect(() => {
+    onInvalidChange?.(Boolean(invalid));
+  }, [invalid, onInvalidChange]);
+}
+
 export function useSettings(section) {
   const [saved, setSaved] = useState(null);
   const [draft, setDraft] = useState(null);
@@ -53,7 +62,7 @@ export function useSettings(section) {
 }
 
 export function formatDate(timestamp) {
-  return timestamp ? new Date(timestamp).toLocaleString('de-DE') : '–';
+  return timestamp ? new Date(timestamp).toLocaleString('de-DE') : '-';
 }
 
 const MAX_BUFFERED_ENTRIES = 1000;

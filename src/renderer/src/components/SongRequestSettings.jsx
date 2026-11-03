@@ -1,20 +1,20 @@
-import { useSettings } from '../hooks';
+import { useSettings, useWizardControl } from '../hooks';
 import RewardFields from './RewardFields';
 import { Field, Notice, RadioGroup, SaveBar, TextInput } from './ui';
 
-export function SongRequestSettings({ saveLabel, onSaved }) {
+export function SongRequestSettings({ control, onSaved, saveLabel }) {
   const { draft, loading, saving, error, update, updateNested, save } = useSettings('songRequest');
-  if (loading) return null;
-
-  const invalid = draft.mode === 'powerup' && !draft.powerUpName.trim();
+  const invalid = !loading && draft.mode === 'powerup' && !draft.powerUpName.trim();
   const onSave = async () => {
     if (await save(['mode', 'powerUpName', 'reward'])) onSaved?.();
   };
+  useWizardControl(control, () => save(['mode', 'powerUpName', 'reward']), invalid);
+  if (loading) return null;
 
   return (
     <div className="stack">
       <Notice>
-        Bei Song-Requests ist die Eingabe des Zuschauers immer erforderlich – daraus wird der Song
+        Bei Song-Requests ist die Eingabe des Zuschauers immer erforderlich - daraus wird der Song
         (Suchbegriff oder Spotify-Link) ermittelt.
       </Notice>
 
@@ -39,7 +39,7 @@ export function SongRequestSettings({ saveLabel, onSaved }) {
       {draft.mode === 'powerup' ? (
         <Field
           label="Genauer Name des Power-Ups"
-          hint="Titel des eigenen (Custom) Power-Ups, exakt wie in Twitch. Die Eingabe des Zuschauers beim Einlösen ist die Song-Eingabe – das Power-Up muss also eine Texteingabe verlangen."
+          hint="Titel des eigenen (Custom) Power-Ups, exakt wie in Twitch. Die Eingabe des Zuschauers beim Einlösen ist die Song-Eingabe - das Power-Up muss also eine Texteingabe verlangen."
         >
           <TextInput
             value={draft.powerUpName}
@@ -55,13 +55,21 @@ export function SongRequestSettings({ saveLabel, onSaved }) {
         />
       )}
 
-      <SaveBar onSave={onSave} saving={saving} error={error} label={saveLabel} disabled={invalid} />
+      <SaveBar
+        onSave={onSave}
+        saving={saving}
+        error={error}
+        label={saveLabel}
+        disabled={invalid}
+        hideButton={Boolean(control)}
+      />
     </div>
   );
 }
 
-export function SpotifyTargetSettings({ saveLabel, onSaved }) {
+export function SpotifyTargetSettings({ control, onSaved, saveLabel }) {
   const { draft, loading, saving, error, update, save } = useSettings('songRequest');
+  useWizardControl(control, () => save(['target', 'playlist']), false);
   if (loading) return null;
 
   const onSave = async () => {
@@ -98,7 +106,13 @@ export function SpotifyTargetSettings({ saveLabel, onSaved }) {
           />
         </Field>
       )}
-      <SaveBar onSave={onSave} saving={saving} error={error} label={saveLabel} />
+      <SaveBar
+        onSave={onSave}
+        saving={saving}
+        error={error}
+        label={saveLabel}
+        hideButton={Boolean(control)}
+      />
     </div>
   );
 }

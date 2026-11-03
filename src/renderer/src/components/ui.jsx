@@ -117,15 +117,17 @@ export function CopyField({ value }) {
   );
 }
 
-export function SaveBar({ onSave, saving, error, label = 'Speichern', disabled }) {
+export function SaveBar({ onSave, saving, error, label = 'Speichern', disabled, hideButton }) {
   return (
     <div className="stack" style={{ marginTop: 16 }}>
       {error && <Notice tone="error">{error}</Notice>}
-      <div className="row">
-        <Button variant="primary" onClick={onSave} disabled={saving || disabled}>
-          {saving ? 'Speichere…' : label}
-        </Button>
-      </div>
+      {!hideButton && (
+        <div className="row">
+          <Button variant="primary" onClick={onSave} disabled={saving || disabled}>
+            {saving ? 'Speichere…' : label}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

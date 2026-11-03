@@ -69,13 +69,9 @@ async function onRedemption(event) {
 
 async function onPowerUp(event) {
   if (event.status !== 'fulfilled' || event.status === 'canceled') return;
-  console.log(event);
   const songRequest = getSettings('songRequest');
   const skip = getSettings('skip');
   const title = event.custom_power_up?.title;
-
-  console.log(`Power-Up title: ${title}`);
-  console.log(`Power-Up bits: ${event.custom_power_up.bits}`);
 
   if (songRequest.mode === 'powerup' && matchesPowerUp(event, songRequest.powerUpName)) {
     logger.info(
@@ -131,8 +127,8 @@ async function startupSpotify() {
     logger.warn(
       'spotify',
       reauthInDays > 0
-        ? `Spotify-Autorisierung läuft in ${reauthInDays} Tag(en) ab – bitte neu verbinden`
-        : 'Spotify-Autorisierung ist abgelaufen – bitte neu verbinden'
+        ? `Spotify-Autorisierung läuft in ${reauthInDays} Tag(en) ab - bitte neu verbinden`
+        : 'Spotify-Autorisierung ist abgelaufen - bitte neu verbinden'
     );
   }
   try {

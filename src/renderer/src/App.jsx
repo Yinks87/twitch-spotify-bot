@@ -4,6 +4,8 @@ import Dashboard from './components/Dashboard';
 import Settings from './components/Settings';
 import Wizard from './components/Wizard';
 
+const isDev = import.meta.env.DEV;
+
 function App() {
   const [appSettings, setAppSettings] = useState(null);
   const [status, setStatus] = useState(null);

@@ -142,7 +142,7 @@ function onMessage(conn, message, isReconnect) {
     }
     case 'revocation': {
       const { type: subType, status } = message.payload.subscription;
-      logger.error('twitch', `EventSub-Abo ${subType} widerrufen (${status})`);
+      logger.error('twitch', `EventSub: ${subType} widerrufen (${status})`);
       setState('error');
       break;
     }

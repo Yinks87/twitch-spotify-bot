@@ -60,7 +60,7 @@ export default function RewardsCard({ connected, onNotify }) {
               )}
               <div className="hint">
                 {reward.suspended && !reward.exists
-                  ? 'Gelöscht – wird nicht automatisch neu angelegt'
+                  ? 'Gelöscht - wird nicht automatisch neu angelegt'
                   : !reward.wanted
                     ? 'Im aktuellen Modus nicht mehr vorgesehen'
                     : ''}

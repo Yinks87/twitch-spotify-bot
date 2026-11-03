@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import ConnectionSetup from './ConnectionSetup';
 import SkipSettings from './SkipSettings';
 import { SongRequestSettings, SpotifyTargetSettings } from './SongRequestSettings';
 import { Button, Card, Notice } from './ui';
+
+const isDev = import.meta.env.DEV;
 
 const STEPS = [
   'Willkommen',
@@ -17,9 +19,22 @@ const STEPS = [
 export default function Wizard({ status, onNotify, onFinished }) {
   const [step, setStep] = useState(0);
   const [finishing, setFinishing] = useState(false);
+  const [invalid, setInvalid] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const saveRef = useRef(null);
+  const control = useMemo(() => ({ ref: saveRef, onInvalidChange: setInvalid }), []);
 
   const next = () => setStep((s) => Math.min(STEPS.length - 1, s + 1));
   const back = () => setStep((s) => Math.max(0, s - 1));
+
+  const saveAndNext = async () => {
+    setBusy(true);
+    try {
+      if (await saveRef.current?.save()) next();
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const finish = async () => {
     setFinishing(true);
@@ -32,14 +47,18 @@ export default function Wizard({ status, onNotify, onFinished }) {
     }
   };
 
-  const nav = (canContinue) => (
+  const nav = (canContinue, saves = false) => (
     <div className="row between" style={{ marginTop: 18 }}>
-      <Button onClick={back} disabled={step === 0}>
+      <Button onClick={back} disabled={step === 0 || busy}>
         Zurück
       </Button>
-      {canContinue !== null && step < STEPS.length - 1 && (
-        <Button variant="primary" onClick={next} disabled={!canContinue}>
-          Weiter
+      {step < STEPS.length - 1 && (
+        <Button
+          variant="primary"
+          onClick={saves ? saveAndNext : next}
+          disabled={saves ? busy || invalid : !isDev && !canContinue}
+        >
+          {busy ? 'Speichere…' : 'Weiter'}
         </Button>
       )}
     </div>
@@ -81,8 +100,8 @@ export default function Wizard({ status, onNotify, onFinished }) {
 
       {step === 2 && (
         <Card title="Twitch: Song-Request">
-          <SongRequestSettings saveLabel="Speichern & Weiter" onSaved={next} />
-          {nav(null)}
+          <SongRequestSettings control={control} />
+          {nav(true, true)}
         </Card>
       )}
 
@@ -95,15 +114,15 @@ export default function Wizard({ status, onNotify, onFinished }) {
 
       {step === 4 && (
         <Card title="Spotify: Wohin sollen Songs hinzugefügt werden?">
-          <SpotifyTargetSettings saveLabel="Speichern & Weiter" onSaved={next} />
-          {nav(null)}
+          <SpotifyTargetSettings control={control} />
+          {nav(true, true)}
         </Card>
       )}
 
       {step === 5 && (
         <Card title="Song-Skip">
-          <SkipSettings saveLabel="Speichern & Weiter" onSaved={next} />
-          {nav(null)}
+          <SkipSettings control={control} />
+          {nav(true, true)}
         </Card>
       )}
 
@@ -113,7 +132,7 @@ export default function Wizard({ status, onNotify, onFinished }) {
             <Notice tone="ok">
               Nach dem Abschluss öffnet sich das Dashboard. Im Modus „Channelpoints“ werden die
               Rewards automatisch in deinem Kanal angelegt. Alle Einstellungen kannst du später im
-              Bereich „Einstellungen“ ändern – dort findest du auch die Chat-Commands und
+              Bereich „Einstellungen“ ändern - dort findest du auch die Chat-Commands und
               Nachrichtentexte.
             </Notice>
             <div className="row between">

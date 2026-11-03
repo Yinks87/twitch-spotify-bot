@@ -13,7 +13,7 @@ const PROVIDERS = {
     scopes: 'channel:manage:redemptions, bits:read, user:write:chat, user:read:chat',
     steps: [
       <>
-        Öffne die Twitch Developer Console (Link oben), melde dich an und klicke auf{' '}
+        Öffne die Twitch Developer Console, melde dich an und klicke auf{' '}
         <strong>„Anwendung registrieren“</strong>.
       </>,
       <>
@@ -38,7 +38,7 @@ const PROVIDERS = {
       'user-read-playback-state, user-modify-playback-state, user-read-currently-playing, playlist-modify-public, playlist-modify-private',
     steps: [
       <>
-        Öffne das Spotify Developer Dashboard (Link oben), melde dich an und klicke auf{' '}
+        Öffne das Spotify Developer Dashboard, melde dich an und klicke auf{' '}
         <strong>„Create app“</strong>.
       </>,
       <>
@@ -173,7 +173,7 @@ export default function ConnectionSetup({ provider, status }) {
 
       {waiting && (
         <Notice>
-          Die Autorisierung wurde in deinem Standard-Browser geöffnet. Schließe sie dort ab – diese
+          Die Autorisierung wurde in deinem Standard-Browser geöffnet. Schließe sie dort ab - diese
           Ansicht aktualisiert sich automatisch.
         </Notice>
       )}

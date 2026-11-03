@@ -47,7 +47,7 @@ function createWindow() {
   }
 }
 
-// Der OAuth-Callback-Server belegt Port 3131 – nur eine Instanz erlaubt.
+// Der OAuth-Callback-Server belegt Port 3131 - nur eine Instanz erlaubt.
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {

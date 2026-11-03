@@ -72,11 +72,11 @@ export function startAuthServer() {
       if (host === '::1' && ['EADDRNOTAVAIL', 'EAFNOSUPPORT'].includes(error.code)) return;
       logger.error(
         'auth',
-        `Callback-Server (${host}:${AUTH_PORT}) Fehler: ${error.code ?? errorMessage(error)}`
+        `OAuth-Server (${host}:${AUTH_PORT}) Fehler: ${error.code ?? errorMessage(error)}`
       );
     });
     server.listen(AUTH_PORT, host, () => {
-      logger.info('auth', `Callback-Server läuft auf ${host}:${AUTH_PORT}`);
+      logger.info('auth', `OAuth-Server läuft auf ${host}:${AUTH_PORT}`);
     });
   }
 }

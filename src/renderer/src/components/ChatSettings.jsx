@@ -33,7 +33,7 @@ export default function ChatSettings() {
           />
           {!draft.messagesEnabled && (
             <Notice tone="warn">
-              Alle Chatnachrichten sind deaktiviert – auch die Antwort auf den Song-Command.
+              Alle Chatnachrichten sind deaktiviert - auch die Antwort auf den Song-Command.
             </Notice>
           )}
         </div>

@@ -83,7 +83,7 @@ function saveTokens(tokens) {
 
 export async function completeAuth(code, state) {
   if (!pending || state !== pending.state) {
-    throw new SpotifyError('Ungültiger State – bitte den Vorgang erneut starten');
+    throw new SpotifyError('Ungültiger State - bitte den Vorgang erneut starten');
   }
   const { verifier } = pending;
   pending = null;
@@ -125,7 +125,7 @@ async function refreshAccessToken() {
       );
       auth().set({ accessToken: '', refreshToken: '', expiresAt: 0 });
       patchRuntime('spotify', { error: 'Neue Autorisierung erforderlich' });
-      throw new SpotifyError('Spotify-Sitzung abgelaufen – bitte neu verbinden', 401);
+      throw new SpotifyError('Spotify-Sitzung abgelaufen - bitte neu verbinden', 401);
     }
     throw error;
   }
@@ -237,7 +237,7 @@ export async function getTrack(id) {
   } catch (error) {
     if (error.status === 404) return null;
     if (error.status === 401 || error.status === 403) throw error;
-    // Metadaten sind nur für die Chatnachricht nötig – der Song kann trotzdem eingereiht werden.
+    // Metadaten sind nur für die Chatnachricht nötig - der Song kann trotzdem eingereiht werden.
     logger.warn('spotify', `Track-Details nicht abrufbar, verwende Link: ${errorMessage(error)}`);
     const url = `https://open.spotify.com/track/${id}`;
     return { id, uri: `spotify:track:${id}`, title: url, artist: '', song: url, url };
