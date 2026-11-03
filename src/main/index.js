@@ -21,7 +21,7 @@ function createWindow() {
     show: false,
     autoHideMenuBar: true,
     title: 'Twitch Spotify Bot',
-    ...(process.platform === 'linux' ? { icon } : {}),
+    icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false

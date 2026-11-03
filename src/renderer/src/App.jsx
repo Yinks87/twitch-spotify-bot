@@ -4,8 +4,6 @@ import Dashboard from './components/Dashboard';
 import Settings from './components/Settings';
 import Wizard from './components/Wizard';
 
-const isDev = import.meta.env.DEV;
-
 function App() {
   const [appSettings, setAppSettings] = useState(null);
   const [status, setStatus] = useState(null);
@@ -85,7 +83,9 @@ function App() {
   return (
     <div className="app">
       <nav className="sidebar">
-        <div className="brand">Twitch Spotify Bot</div>
+        <div className="brand">
+          Twitch Spotify Bot
+        </div>
         {items.map(([id, label]) => (
           <button
             key={id}

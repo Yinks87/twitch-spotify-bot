@@ -97,6 +97,8 @@ code {
   font-weight: 700;
   font-size: 15px;
   padding: 4px 10px 16px;
+  display: flex;
+  align-items: center;
 }
 
 .nav-item {
