@@ -5,6 +5,7 @@ import { storeApi } from './api/store-api';
 import { oauthApi } from './api/oauth-api';
 import { logApi } from './api/log-api';
 import { rewardApi } from './api/reward-api';
+import { updateApi } from './api/update-api';
 
 if (process.contextIsolated) {
   try {
@@ -13,6 +14,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('oauthApi', oauthApi);
     contextBridge.exposeInMainWorld('logApi', logApi);
     contextBridge.exposeInMainWorld('rewardApi', rewardApi);
+    contextBridge.exposeInMainWorld('updateApi', updateApi);
   } catch (error) {
     console.error(error);
   }
@@ -22,4 +24,5 @@ if (process.contextIsolated) {
   window.oauthApi = oauthApi;
   window.logApi = logApi;
   window.rewardApi = rewardApi;
+  window.updateApi = updateApi;
 }

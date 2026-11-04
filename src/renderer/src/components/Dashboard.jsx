@@ -66,6 +66,34 @@ function PlatformActions({ provider, status, onNotify }) {
   );
 }
 
+function UpdateNotice() {
+  const [update, setUpdate] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    window.updateApi.get().then((state) => active && setUpdate(state));
+    const unsubscribe = window.updateApi.onState(setUpdate);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, []);
+
+  if (!update) return null;
+  if (update.status === 'available')
+    return <Notice tone="warn">Update {update.version} verfügbar, Download startet.</Notice>;
+  if (update.status === 'downloading')
+    return (
+      <Notice tone="warn">
+        Update {update.version} wird heruntergeladen: {update.percent}%
+      </Notice>
+    );
+  if (update.status === 'downloaded')
+    return <Notice tone="ok">Update {update.version} geladen, die App wird neu gestartet.</Notice>;
+  if (update.status === 'error') return <Notice tone="error">Update-Fehler: {update.error}</Notice>;
+  return null;
+}
+
 export default function Dashboard({ status, skip, showLog, onNavigate, onNotify }) {
   const { twitch, spotify } = status;
   const songRequest = useSettings('songRequest').draft;
@@ -79,6 +107,7 @@ export default function Dashboard({ status, skip, showLog, onNavigate, onNotify 
       <div className="page-header">
         <h1>Dashboard</h1>
       </div>
+      <UpdateNotice />
 
       <div className="grid">
         <Card

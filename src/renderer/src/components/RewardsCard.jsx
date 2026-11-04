@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Badge, Button, Card, Switch } from './ui';
+import { Badge, Button, Card, ConfirmDialog, Switch } from './ui';
 
 export default function RewardsCard({ connected, onNotify }) {
   const [rewards, setRewards] = useState([]);
   const [busy, setBusy] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -30,9 +31,9 @@ export default function RewardsCard({ connected, onNotify }) {
     }
   };
 
-  // TODO: Add a custom dialog
-  const remove = (reward) => {
-    if (!window.confirm(`Reward „${reward.label}“ wirklich bei Twitch löschen?`)) return;
+  const confirmDelete = () => {
+    const reward = pendingDelete;
+    setPendingDelete(null);
     run(() => window.rewardApi.remove(reward.key), 'Reward gelöscht');
   };
 
@@ -72,6 +73,7 @@ export default function RewardsCard({ connected, onNotify }) {
                 checked={!reward.isPaused}
                 disabled={busy || !connected}
                 onChange={() => run(() => window.rewardApi.toggle(reward.key), 'Reward aktualisiert')}
+                title="Reward aktivieren/deaktivieren"
               />
               <Badge tone={reward.exists ? 'ok' : 'idle'}>
                 {reward.exists ? 'Angelegt' : 'Nicht angelegt'}
@@ -80,7 +82,7 @@ export default function RewardsCard({ connected, onNotify }) {
                 <Button
                   variant="danger"
                   disabled={busy || !connected}
-                  onClick={() => remove(reward)}
+                  onClick={() => setPendingDelete(reward)}
                 >
                   Löschen
                 </Button>
@@ -89,6 +91,16 @@ export default function RewardsCard({ connected, onNotify }) {
           </div>
         ))}
       </div>
+      {pendingDelete && (
+        <ConfirmDialog
+          title="Reward löschen"
+          message={`Reward „${pendingDelete.label}“ wirklich bei Twitch löschen?`}
+          confirmLabel="Löschen"
+          danger
+          onConfirm={confirmDelete}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
     </Card>
   );
 }

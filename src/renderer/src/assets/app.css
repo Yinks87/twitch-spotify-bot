@@ -284,6 +284,7 @@ textarea:focus {
   padding: 10px 12px;
   background: var(--panel-2);
   border: 1px solid var(--border);
+  margin-bottom: 12px;
 }
 
 .notice.warn {
@@ -409,6 +410,26 @@ textarea:focus {
   margin: 0 auto;
   padding: 32px 20px 60px;
   height: 100%;
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 20;
+}
+
+.dialog {
+  width: 420px;
+  max-width: calc(100vw - 40px);
+  padding: 20px;
+  border-radius: 10px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 }
 
 .toast {

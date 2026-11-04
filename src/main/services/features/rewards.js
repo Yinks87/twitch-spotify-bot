@@ -77,6 +77,19 @@ async function toggleReward(key) {
   return true;
 }
 
+const isDuplicateError = (error) =>
+  error.status === 400 && /duplicate/i.test(`${error.code} ${error.message}`);
+
+// Übernimmt einen vorhandenen Reward mit gleichem Titel (von dieser App angelegt).
+async function adoptByTitle(key, wanted, originalError) {
+  const match = (await getManageableRewards()).find((r) => r.title === wanted.title);
+  if (!match) throw originalError;
+  await updateReward(match.id, wanted);
+  getStore('rewards').set(key, match.id);
+  logger.success('twitch', `Vorhandenen Channelpoint-Reward "${wanted.title}" übernommen`);
+  return match.id;
+}
+
 async function syncOne(key, wanted, recreate) {
   const store = getStore('rewards');
 
@@ -95,6 +108,31 @@ async function syncOne(key, wanted, recreate) {
       logger.info('twitch', `Channelpoint-Reward "${wanted.title}" aktualisiert`);
       return;
     } catch (error) {
+      if (isDuplicateError(error)) {
+        const rewards = await getManageableRewards();
+        const match = rewards.find((r) => r.title === wanted.title && r.id !== existingId);
+        if (match) {
+          // Der Titel gehört bereits einem anderen Reward der App: diesen übernehmen und den
+          // veralteten Reward entfernen.
+          await updateReward(match.id, wanted);
+          store.set(key, match.id);
+          await deleteReward(existingId).catch((e) => {
+            if (e.status !== 404) throw e;
+          });
+          logger.success('twitch', `Vorhandenen Channelpoint-Reward "${wanted.title}" übernommen`);
+          return;
+        }
+        // Der Titel ist bei Twitch bereits vergeben (z. B. von einem nicht von der App
+        // verwalteten Reward): alle übrigen Einstellungen trotzdem aktualisieren.
+        const withoutTitle = { ...wanted };
+        delete withoutTitle.title;
+        await updateReward(existingId, withoutTitle);
+        logger.warn(
+          'twitch',
+          `Channelpoint-Reward (${LABELS[key]}): Titel "${wanted.title}" ist bei Twitch bereits vergeben, Titel nicht geändert`
+        );
+        return;
+      }
       if (error.status !== 404) throw error;
       store.delete(key);
     }
@@ -105,13 +143,8 @@ async function syncOne(key, wanted, recreate) {
     store.set(key, created.id);
     logger.success('twitch', `Channelpoint-Reward "${wanted.title}" angelegt`);
   } catch (error) {
-    if (error.status !== 400 || !/duplicate/i.test(`${error.code} ${error.message}`)) throw error;
-    // Ein Reward mit diesem Titel existiert bereits (von dieser App angelegt) - übernehmen.
-    const match = (await getManageableRewards()).find((r) => r.title === wanted.title);
-    if (!match) throw error;
-    await updateReward(match.id, wanted);
-    store.set(key, match.id);
-    logger.success('twitch', `Vorhandenen Channelpoint-Reward "${wanted.title}" übernommen`);
+    if (!isDuplicateError(error)) throw error;
+    await adoptByTitle(key, wanted, error);
   }
 }
 

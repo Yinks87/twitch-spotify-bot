@@ -1,4 +1,35 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+export function ConfirmDialog({
+  title,
+  message,
+  confirmLabel = 'Bestätigen',
+  cancelLabel = 'Abbrechen',
+  danger,
+  onConfirm,
+  onCancel
+}) {
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && onCancel();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onCancel]);
+
+  return (
+    <div className="dialog-backdrop" onClick={onCancel}>
+      <div className="dialog" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+        {title && <h2 style={{ marginTop: 0 }}>{title}</h2>}
+        <p>{message}</p>
+        <div className="row" style={{ justifyContent: 'flex-end' }}>
+          <Button onClick={onCancel}>{cancelLabel}</Button>
+          <Button variant={danger ? 'danger' : 'primary'} onClick={onConfirm} autoFocus>
+            {confirmLabel}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function Card({ title, className = '', actions, children }) {
   return (
@@ -132,7 +163,7 @@ export function SaveBar({ onSave, saving, error, label = 'Speichern', disabled, 
   );
 }
 
-export function Switch({ checked, onChange, disabled }) {
+export function Switch({ checked, onChange, disabled, title }) {
   return (
     <label className="switch">
       <input
@@ -140,8 +171,9 @@ export function Switch({ checked, onChange, disabled }) {
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
         disabled={disabled}
+        title={title}
       />
-      <span className="slider" />
+      <span className="slider" title={title} />
     </label>
   );
 }

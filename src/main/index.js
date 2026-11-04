@@ -6,6 +6,7 @@ import { initializeStoreIpc } from './ipc/store-ipc';
 import { initializeOAuthIpc } from './ipc/oauth-ipc';
 import { initializeLogIpc } from './ipc/log-ipc';
 import { initializeRewardIpc } from './ipc/reward-ipc';
+import { initializeUpdateIpc } from './ipc/update-ipc';
 import { initBot } from './services/bot';
 import { initAutoUpdater } from './services/updater';
 import { attachWindow, hideWindow, initLifecycle, showWindow, startedHidden } from './lifecycle';
@@ -21,7 +22,7 @@ function createWindow() {
     minHeight: 600,
     show: false,
     autoHideMenuBar: true,
-    title: 'Twitch Spotify Bot',
+    title: 'Twitch Spotify Bot - v' + app.getVersion(),
     icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -73,6 +74,7 @@ if (!app.requestSingleInstanceLock()) {
     initializeOAuthIpc();
     initializeLogIpc();
     initializeRewardIpc();
+    initializeUpdateIpc();
     initLifecycle();
 
     createWindow();

@@ -1,6 +1,6 @@
 {
   "name": "twitch-spotify-bot",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "An app to request songs on Spotify via Twitch Channelpoints or Power-Ups",
   "main": "./out/main/index.js",
   "author": "yinks87",
