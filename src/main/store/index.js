@@ -1,24 +1,51 @@
 import Store from 'electron-store';
+import { STORE_DIR, migrateLegacyStores } from './migrate';
 
 const FILE_NAMES = {
   app: 'app',
-  twitchAuth: 'twitch-auth',
-  spotifyAuth: 'spotify-auth',
+  auth: 'auth',
   songRequest: 'song-request',
   skip: 'skip',
   chat: 'chat',
   rewards: 'rewards',
-  actionLog: 'action-log',
-  window: 'window'
+  actionLog: 'action-log'
 };
 
 const cache = new Map();
+let migrated = false;
 
 export function getStore(key) {
+  if (!migrated) {
+    migrated = true;
+    try {
+      migrateLegacyStores();
+    } catch (error) {
+      console.error('[store] Migration der alten Stores fehlgeschlagen:', error);
+    }
+  }
   if (!cache.has(key)) {
-    cache.set(key, new Store({ name: FILE_NAMES[key] }));
+    cache.set(key, new Store({ name: FILE_NAMES[key], cwd: STORE_DIR }));
   }
   return cache.get(key);
+}
+
+// Zugriff auf die Zugangsdaten/Tokens einer Plattform innerhalb des gemeinsamen auth-Stores.
+export function getAuthStore(provider) {
+  if (provider !== 'twitch' && provider !== 'spotify') {
+    throw new Error(`Unbekannte Plattform: ${provider}`);
+  }
+  const scoped = (key) => `${provider}.${key}`;
+  return {
+    get: (key, fallback) => getStore('auth').get(scoped(key), fallback),
+    set: (key, value) => {
+      const store = getStore('auth');
+      if (typeof key === 'object') {
+        store.set(Object.fromEntries(Object.entries(key).map(([k, v]) => [scoped(k), v])));
+      } else {
+        store.set(scoped(key), value);
+      }
+    }
+  };
 }
 
 const REWARD_OPTIONS = {
@@ -35,11 +62,14 @@ export const DEFAULTS = {
     setupCompleted: false,
     showActionLog: true,
     autoStart: true,
-    closeAction: 'tray' // quit | tray
+    closeAction: 'tray', // quit | tray
+    window: { width: 1100, height: 760, x: null, y: null, maximized: false }
   },
   songRequest: {
     mode: 'channelpoints', // channelpoints | powerup
     powerUpName: '',
+    maxDurationEnabled: true,
+    maxDurationMinutes: 5,
     reward: {
       title: 'Song Request',
       cost: 500,
@@ -82,6 +112,8 @@ export const DEFAULTS = {
       noInput: '@${user}: Bitte gib einen Songtitel oder Spotify-Link an.',
       songInvalid: '@${user}: ${reason}',
       songNotFound: '@${user}: Es wurde kein passender Song gefunden.',
+      songTooLong:
+        '@${user}: Die maximale Song-Länge beträgt ${max}. Song nicht hinzugefügt.',
       spotifyError: '@${user}: Der Song konnte nicht hinzugefügt werden (${error}).',
       skipVote: '@${user} hat für einen Skip gestimmt (${votes}/${required}).',
       skipAlreadyVoted: '@${user}: Du hast bereits für einen Skip gestimmt.',
@@ -93,6 +125,10 @@ export const DEFAULTS = {
     }
   }
 };
+
+DEFAULTS.chat.messageEnabled = Object.fromEntries(
+  Object.keys(DEFAULTS.chat.messages).map((key) => [key, true])
+);
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -141,11 +177,20 @@ const NORMALIZERS = {
     setupCompleted: bool(v.setupCompleted, false),
     showActionLog: bool(v.showActionLog, true),
     autoStart: bool(v.autoStart, false),
-    closeAction: oneOf(v.closeAction, ['quit', 'tray'], DEFAULTS.app.closeAction)
+    closeAction: oneOf(v.closeAction, ['quit', 'tray'], DEFAULTS.app.closeAction),
+    window: {
+      width: int(v.window.width, DEFAULTS.app.window.width, 1, 100000),
+      height: int(v.window.height, DEFAULTS.app.window.height, 1, 100000),
+      x: Number.isFinite(v.window.x) ? Math.round(v.window.x) : null,
+      y: Number.isFinite(v.window.y) ? Math.round(v.window.y) : null,
+      maximized: bool(v.window.maximized, false)
+    }
   }),
   songRequest: (v) => ({
     mode: oneOf(v.mode, ['channelpoints', 'powerup'], DEFAULTS.songRequest.mode),
     powerUpName: str(v.powerUpName, '', 100),
+    maxDurationEnabled: bool(v.maxDurationEnabled, false),
+    maxDurationMinutes: int(v.maxDurationMinutes, DEFAULTS.songRequest.maxDurationMinutes, 1, 600),
     reward: {
       title: str(v.reward.title, DEFAULTS.songRequest.reward.title, 45) || 'Song Request',
       cost: int(v.reward.cost, DEFAULTS.songRequest.reward.cost, 1, 1000000000),
@@ -185,6 +230,9 @@ const NORMALIZERS = {
           ? v.messages[key].slice(0, 500)
           : DEFAULTS.chat.messages[key]
       ])
+    ),
+    messageEnabled: Object.fromEntries(
+      Object.keys(DEFAULTS.chat.messages).map((key) => [key, bool(v.messageEnabled[key], true)])
     )
   })
 };

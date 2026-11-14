@@ -81,7 +81,7 @@ function UpdateNotice() {
 
   if (!update) return null;
   if (update.status === 'available')
-    return <Notice tone="warn">Update {update.version} verfügbar, Download startet.</Notice>;
+    return <Notice tone="warn">Update {update.version} verfügbar, wartet auf Bestätigung.</Notice>;
   if (update.status === 'downloading')
     return (
       <Notice tone="warn">

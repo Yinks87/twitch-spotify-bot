@@ -5,6 +5,12 @@ import { parseSongInput } from '../song-parser';
 import { errorMessage } from '../template';
 import { say } from './chat-output';
 
+function formatDuration(ms) {
+  const totalSeconds = Math.round(ms / 1000);
+  const seconds = String(totalSeconds % 60).padStart(2, '0');
+  return `${Math.floor(totalSeconds / 60)}:${seconds} min`;
+}
+
 // Rückgabe: true, wenn der Song hinzugefügt wurde (Basis für Fulfill/Refund einer Einlösung).
 export async function handleSongRequest({ userLogin, input, source }) {
   const settings = getSettings('songRequest');
@@ -40,6 +46,19 @@ export async function handleSongRequest({ userLogin, input, source }) {
       artist: track.artist,
       url: track.url
     };
+    const maxMs = settings.maxDurationEnabled ? settings.maxDurationMinutes * 60000 : null;
+    if (maxMs && track.durationMs > maxMs) {
+      logger.warn(
+        'songrequest',
+        `${track.song} von ${userLogin} abgelehnt: ${formatDuration(track.durationMs)} überschreitet das Limit von ${formatDuration(maxMs)}`
+      );
+      await say('songTooLong', {
+        ...vars,
+        duration: formatDuration(track.durationMs),
+        max: formatDuration(maxMs)
+      });
+      return false;
+    }
     if (settings.target === 'playlist') {
       const playlistId = await spotify.resolvePlaylistId(settings.playlist);
       await spotify.addToPlaylist(playlistId, track);

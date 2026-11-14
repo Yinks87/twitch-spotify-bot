@@ -1,5 +1,5 @@
 import { useSettings } from '../hooks';
-import { Card, Field, NumberInput, Notice, SaveBar, TextInput, Toggle } from './ui';
+import { Card, Field, NumberInput, Notice, SaveBar, Switch, TextInput, Toggle } from './ui';
 
 const MESSAGE_LABELS = {
   nowPlaying: 'Aktueller Song (Command-Antwort)',
@@ -9,6 +9,7 @@ const MESSAGE_LABELS = {
   noInput: 'Song-Request ohne Eingabe',
   songInvalid: 'Ungültige Song-Eingabe',
   songNotFound: 'Song nicht gefunden',
+  songTooLong: 'Song zu lang',
   spotifyError: 'Fehler beim Hinzufügen',
   skipVote: 'Skip-Stimme gezählt',
   skipAlreadyVoted: 'Bereits für Skip abgestimmt',
@@ -79,16 +80,25 @@ export default function ChatSettings({ onNotify }) {
             <code>{'${artist}'}</code>, <code>{'${url}'}</code> (Spotify-Link),{' '}
             <code>{'${user}'}</code> (Twitch-Login). Bei Skip-Nachrichten zusätzlich{' '}
             <code>{'${votes}'}</code> und <code>{'${required}'}</code>, bei Fehlern{' '}
-            <code>{'${error}'}</code> bzw. <code>{'${reason}'}</code>. Ein leeres Feld unterdrückt
-            die jeweilige Nachricht.
+            <code>{'${error}'}</code> bzw. <code>{'${reason}'}</code>, bei zu langen Songs{' '}
+            <code>{'${duration}'}</code> und <code>{'${max}'}</code>. Ein leeres Feld unterdrückt
+            die jeweilige Nachricht, mit dem Schalter lässt sie sich einzeln deaktivieren.
           </Notice>
           <div className="msg-grid">
             {Object.entries(MESSAGE_LABELS).map(([key, label]) => (
               <Field key={key} label={label}>
-                <TextInput
-                  value={draft.messages[key]}
-                  onChange={(value) => updateNested('messages', { [key]: value })}
-                />
+                <div className="row nowrap">
+                  <Switch
+                    checked={draft.messageEnabled[key]}
+                    onChange={(enabled) => updateNested('messageEnabled', { [key]: enabled })}
+                    title="Nachricht aktivieren/deaktivieren"
+                  />
+                  <TextInput
+                    value={draft.messages[key]}
+                    disabled={!draft.messageEnabled[key]}
+                    onChange={(value) => updateNested('messages', { [key]: value })}
+                  />
+                </div>
               </Field>
             ))}
           </div>

@@ -1,8 +1,23 @@
 import { useSettings, useWizardControl } from '../hooks';
 import RewardFields from './RewardFields';
-import { Field, Notice, RadioGroup, SaveBar, SecretInput, TextInput } from './ui';
+import {
+  Field,
+  NumberInput,
+  Notice,
+  RadioGroup,
+  SaveBar,
+  SecretInput,
+  TextInput,
+  Toggle
+} from './ui';
 
-const REQUEST_FIELDS = ['mode', 'powerUpName', 'reward'];
+const REQUEST_FIELDS = [
+  'mode',
+  'powerUpName',
+  'reward',
+  'maxDurationEnabled',
+  'maxDurationMinutes'
+];
 const TARGET_FIELDS = ['target', 'playlist'];
 const SAVED_MESSAGE = { ok: true, message: 'Einstellungen gespeichert' };
 
@@ -62,6 +77,27 @@ export function SongRequestSettings({ control, onSaved, saveLabel, onNotify }) {
           withPrompt
         />
       )}
+
+      <div className="stack">
+        <Toggle
+          checked={draft.maxDurationEnabled}
+          onChange={(maxDurationEnabled) => update({ maxDurationEnabled })}
+          label="Maximale Song-Länge begrenzen"
+        />
+        {draft.maxDurationEnabled && (
+          <Field
+            label="Maximale Länge (Minuten)"
+            hint="Längere Songs werden abgelehnt, der Bot schreibt eine Fehlermeldung in den Chat."
+          >
+            <NumberInput
+              min={1}
+              max={600}
+              value={draft.maxDurationMinutes}
+              onChange={(maxDurationMinutes) => update({ maxDurationMinutes })}
+            />
+          </Field>
+        )}
+      </div>
 
       <SaveBar
         onSave={onSave}

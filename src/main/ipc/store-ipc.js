@@ -22,6 +22,12 @@ export function initializeStoreIpc() {
   });
   handle('settings:set', async (section, value) => {
     assertSection(section);
+    if (section === 'app') {
+      // Die Fensterposition wird ausschließlich vom Main-Prozess verwaltet.
+      const rest = { ...value };
+      delete rest.window;
+      value = rest;
+    }
     if (section === 'songRequest' && typeof value.playlist === 'string') {
       const current = getSettings(section);
       if (value.playlist !== current.playlist || !current.playlistName) {

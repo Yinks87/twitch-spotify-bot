@@ -12,7 +12,7 @@ export function isOwnMessage(messageId) {
 // Sendet eine konfigurierte Nachricht, sofern Chatnachrichten aktiviert und der Text nicht leer ist.
 export async function say(key, vars = {}) {
   const chat = getSettings('chat');
-  if (!chat.messagesEnabled) return;
+  if (!chat.messagesEnabled || chat.messageEnabled[key] === false) return;
   const text = renderTemplate(chat.messages[key], vars);
   if (!text) return;
   try {

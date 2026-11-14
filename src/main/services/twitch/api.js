@@ -1,4 +1,4 @@
-import { getStore } from '../../store';
+import { getAuthStore } from '../../store';
 import { ensureValidToken, getAccessToken, getIdentity } from './auth';
 
 const BASE_URL = 'https://api.twitch.tv/helix';
@@ -19,7 +19,7 @@ async function helix(method, path, { query, body } = {}, canRetry = true) {
     method,
     headers: {
       Authorization: `Bearer ${getAccessToken()}`,
-      'Client-Id': getStore('twitchAuth').get('clientId'),
+      'Client-Id': getAuthStore('twitch').get('clientId'),
       ...(body ? { 'Content-Type': 'application/json' } : {})
     },
     body: body ? JSON.stringify(body) : undefined

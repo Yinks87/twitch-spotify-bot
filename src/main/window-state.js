@@ -1,5 +1,5 @@
 import { screen } from 'electron';
-import { getStore } from './store';
+import { getSettings, saveSettings } from './store';
 
 const DEFAULT_SIZE = { width: 1100, height: 760 };
 const MIN_SIZE = { width: 860, height: 600 };
@@ -21,7 +21,7 @@ function overlapsDisplay(bounds) {
 // Liefert die zuletzt gespeicherte Größe/Position. Ist die Position nicht mehr verfügbar
 // (z. B. Monitor getrennt), wird nur die Größe übernommen und das Fenster zentriert.
 export function loadWindowState() {
-  const saved = getStore('window').store;
+  const saved = getSettings('app').window;
   const width = Number.isFinite(saved.width)
     ? Math.max(saved.width, MIN_SIZE.width)
     : DEFAULT_SIZE.width;
@@ -44,13 +44,14 @@ export function loadWindowState() {
 }
 
 export function trackWindowState(window) {
-  const store = getStore('window');
   let timer = null;
 
   const save = () => {
     clearTimeout(timer);
     if (window.isDestroyed() || window.isMinimized() || window.isFullScreen()) return;
-    store.set({ ...window.getNormalBounds(), maximized: window.isMaximized() });
+    saveSettings('app', {
+      window: { ...window.getNormalBounds(), maximized: window.isMaximized() }
+    });
   };
   const scheduleSave = () => {
     clearTimeout(timer);

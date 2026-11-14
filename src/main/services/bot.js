@@ -1,5 +1,5 @@
 import { shell } from 'electron';
-import { getSettings, getStore, saveSettings } from '../store';
+import { getAuthStore, getSettings, saveSettings } from '../store';
 import { broadcast } from './events';
 import { logger } from './logger';
 import { emitStatus, getStatus, patchRuntime } from './status';
@@ -212,7 +212,7 @@ export async function disconnect(provider) {
 }
 
 export async function setCredentials(provider, values) {
-  const store = getStore(provider === 'twitch' ? 'twitchAuth' : 'spotifyAuth');
+  const store = getAuthStore(provider);
   const clientId = String(values.clientId ?? '').trim();
   const clientSecret = String(values.clientSecret ?? '').trim();
 
@@ -228,7 +228,7 @@ export async function setCredentials(provider, values) {
 }
 
 export function getCredentials(provider) {
-  const store = getStore(provider === 'twitch' ? 'twitchAuth' : 'spotifyAuth');
+  const store = getAuthStore(provider);
   return {
     clientId: store.get('clientId', ''),
     ...(provider === 'twitch' ? { clientSecret: store.get('clientSecret', '') } : {})

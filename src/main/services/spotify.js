@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { getStore } from '../store';
+import { getAuthStore } from '../store';
 import { logger } from './logger';
 import { errorMessage } from './template';
 import { emitStatus, patchRuntime } from './status';
@@ -24,7 +24,7 @@ export class SpotifyError extends Error {
   }
 }
 
-const auth = () => getStore('spotifyAuth');
+const auth = () => getAuthStore('spotify');
 let pending = null;
 let inflightRefresh = null;
 
@@ -219,6 +219,7 @@ function toTrack(item) {
     title: item.name,
     artist,
     song: artist ? `${item.name} - ${artist}` : item.name,
+    durationMs: Number.isFinite(item.duration_ms) ? item.duration_ms : null,
     url: item.external_urls?.spotify ?? `https://open.spotify.com/track/${item.id}`
   };
 }

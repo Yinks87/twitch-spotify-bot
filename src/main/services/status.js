@@ -1,4 +1,4 @@
-import { getStore } from '../store';
+import { getAuthStore } from '../store';
 import { broadcast } from './events';
 
 const runtime = {
@@ -12,8 +12,8 @@ export function patchRuntime(platform, patch) {
 }
 
 export function getStatus() {
-  const twitch = getStore('twitchAuth');
-  const spotify = getStore('spotifyAuth');
+  const twitch = getAuthStore('twitch');
+  const spotify = getAuthStore('spotify');
   const reauthAt = spotify.get('refreshTokenExpiresAt', null);
   const day = 24 * 60 * 60 * 1000;
 

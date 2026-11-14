@@ -8,7 +8,7 @@ import { initializeLogIpc } from './ipc/log-ipc';
 import { initializeRewardIpc } from './ipc/reward-ipc';
 import { initializeUpdateIpc } from './ipc/update-ipc';
 import { initBot } from './services/bot';
-import { initAutoUpdater } from './services/updater';
+import { initAutoUpdater, getUpdateState } from './services/updater';
 import { attachWindow, hideWindow, initLifecycle, showWindow, startedHidden } from './lifecycle';
 import { loadWindowState, trackWindowState } from './window-state';
 import { flushLogs, logger } from './services/logger';
@@ -41,13 +41,21 @@ function createWindow() {
   }
 
   mainWindow.on('ready-to-show', () => {
-    if (hidden) hideWindow();
+    // Steht ein Update an, muss der Patchnotes-Dialog sichtbar sein.
+    if (hidden && getUpdateState().status !== 'available') hideWindow();
     else mainWindow.show();
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     if (/^https:\/\//i.test(details.url)) shell.openExternal(details.url);
     return { action: 'deny' };
+  });
+
+  // Links dürfen die App nie ersetzen; externe Adressen öffnen im Standard-Browser.
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (url === mainWindow.webContents.getURL()) return;
+    event.preventDefault();
+    if (/^https:\/\//i.test(url)) shell.openExternal(url);
   });
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {

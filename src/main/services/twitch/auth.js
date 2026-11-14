@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { EventEmitter } from 'node:events';
-import { getStore } from '../../store';
+import { getAuthStore } from '../../store';
 import { logger } from '../logger';
 import { errorMessage } from '../template';
 import { emitStatus, patchRuntime } from '../status';
@@ -18,7 +18,7 @@ export const twitchAuthEvents = new EventEmitter();
 
 export class TwitchAuthError extends Error {}
 
-const auth = () => getStore('twitchAuth');
+const auth = () => getAuthStore('twitch');
 let pendingState = null;
 let inflight = null;
 

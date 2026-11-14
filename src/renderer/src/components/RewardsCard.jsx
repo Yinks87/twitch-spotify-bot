@@ -5,6 +5,7 @@ export default function RewardsCard({ connected, onNotify }) {
   const [rewards, setRewards] = useState([]);
   const [busy, setBusy] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [optimistic, setOptimistic] = useState({});
 
   useEffect(() => {
     let active = true;
@@ -28,6 +29,30 @@ export default function RewardsCard({ connected, onNotify }) {
       onNotify({ ok: false, message: e.message });
     } finally {
       setBusy(false);
+    }
+  };
+
+  // Der Schalter springt sofort um; schlägt die Twitch-Anfrage fehl, kehrt er zurück.
+  const toggle = async (reward) => {
+    const { key } = reward;
+    if (key in optimistic) return;
+    const isPaused = !reward.isPaused;
+    setOptimistic((current) => ({ ...current, [key]: isPaused }));
+    try {
+      await window.rewardApi.toggle(key);
+      const list = await window.rewardApi.list().catch(() => null);
+      setRewards(
+        list ?? ((current) => current.map((r) => (r.key === key ? { ...r, isPaused } : r)))
+      );
+      onNotify({ ok: true, message: 'Reward aktualisiert' });
+    } catch (e) {
+      onNotify({ ok: false, message: e.message });
+    } finally {
+      setOptimistic((current) => {
+        const rest = { ...current };
+        delete rest[key];
+        return rest;
+      });
     }
   };
 
@@ -70,9 +95,9 @@ export default function RewardsCard({ connected, onNotify }) {
             </div>
             <div className="row">
               <Switch
-                checked={!reward.isPaused}
-                disabled={busy || !connected}
-                onChange={() => run(() => window.rewardApi.toggle(reward.key), 'Reward aktualisiert')}
+                checked={!(reward.key in optimistic ? optimistic[reward.key] : reward.isPaused)}
+                disabled={!connected}
+                onChange={() => toggle(reward)}
                 title="Reward aktivieren/deaktivieren"
               />
               <Badge tone={reward.exists ? 'ok' : 'idle'}>

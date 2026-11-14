@@ -7,12 +7,10 @@ import { SongRequestSettings, SpotifyTargetSettings } from './SongRequestSetting
 import { Card, Field, RadioGroup, SaveBar, Toggle } from './ui';
 
 const TABS = [
-  ['twitch', 'Twitch'],
-  ['songRequest', 'Twitch: Song-Request'],
-  ['spotify', 'Spotify'],
+  ['twitch', 'Twitch: Redeem'],
   ['target', 'Spotify: Ziel'],
-  ['skip', 'Song-Skip'],
-  ['chat', 'Chat'],
+  ['chat', 'Chatnachrichten'],
+  ['connections', 'Twitch & Spotify'],
   ['general', 'Allgemein']
 ];
 
@@ -61,7 +59,7 @@ function GeneralSettings({ onNotify }) {
 }
 
 export default function Settings({ status, onNotify }) {
-  const [tab, setTab] = useState('twitch');
+  const [tab, setTab] = useState('connections');
 
   return (
     <>
@@ -83,13 +81,27 @@ export default function Settings({ status, onNotify }) {
 
       {tab === 'chat' ? (
         <ChatSettings onNotify={onNotify} />
+      ) : tab === 'connections' ? (
+        <div className="stack">
+          <Card title="Twitch">
+            <ConnectionSetup provider="twitch" status={status.twitch} />
+          </Card>
+          <Card title="Spotify">
+            <ConnectionSetup provider="spotify" status={status.spotify} />
+          </Card>
+        </div>
+      ) : tab === 'twitch' ? (
+        <div className="stack">
+          <Card title="Song-Request">
+            <SongRequestSettings onNotify={onNotify} />
+          </Card>
+          <Card title="Song-Skip">
+            <SkipSettings onNotify={onNotify} />
+          </Card>
+        </div>
       ) : (
         <Card>
-          {tab === 'twitch' && <ConnectionSetup provider="twitch" status={status.twitch} />}
-          {tab === 'songRequest' && <SongRequestSettings onNotify={onNotify} />}
-          {tab === 'spotify' && <ConnectionSetup provider="spotify" status={status.spotify} />}
           {tab === 'target' && <SpotifyTargetSettings onNotify={onNotify} />}
-          {tab === 'skip' && <SkipSettings onNotify={onNotify} />}
           {tab === 'general' && <GeneralSettings onNotify={onNotify} />}
         </Card>
       )}

@@ -38,6 +38,12 @@ async function handleNowPlaying(event, nowPlaying) {
 }
 
 export async function handleChatMessage(event) {
+  if (!event) return;
+  const broadcasterId = event.broadcaster_user_id;
+  const sourceBroadcasterId = event.source_broadcaster_user_id;
+
+  if (sourceBroadcasterId && sourceBroadcasterId !== broadcasterId) return;
+
   const text = event.message?.text?.trim();
   if (!text || isOwnMessage(event.message_id)) return;
 

@@ -2,9 +2,19 @@ import { useCallback, useEffect, useState } from 'react';
 import ActionLog from './components/ActionLog';
 import Dashboard from './components/Dashboard';
 import Settings from './components/Settings';
+import UpdateDialog from './components/UpdateDialog';
 import Wizard from './components/Wizard';
 
 function App() {
+  return (
+    <>
+      <AppContent />
+      <UpdateDialog />
+    </>
+  );
+}
+
+function AppContent() {
   const [appSettings, setAppSettings] = useState(null);
   const [status, setStatus] = useState(null);
   const [skip, setSkip] = useState({ votes: 0, expiresAt: null });
